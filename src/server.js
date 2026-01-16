@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
 import 'dotenv/config';
+import helmet from 'helmet';
 
 const app = express();
 // Використовуємо значення з .env або дефолтний порт 3000
@@ -9,6 +10,7 @@ const PORT = process.env.PORT ?? 3000;
 
 // Middleware
 app.use(express.json());
+app.use(helmet()); // Додає безпекові заголовки
 app.use(cors()); // Дозволяє запити з будь-яких джерел
 app.use(
   pino({
