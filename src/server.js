@@ -1,72 +1,38 @@
 import express from 'express';
 import cors from 'cors';
-import pino from 'pino-http';
 import 'dotenv/config';
 import helmet from 'helmet';
+import { connectMongoDB } from './db/connectMongoDB.js';
+
+// Middlewares
+import { logger } from './middleware/logger.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
+// Routers
+import notesRouters from './routes/notesRoutes.js';
 
 const app = express();
 // Використовуємо значення з .env або дефолтний порт 3000
 const PORT = process.env.PORT ?? 3000;
 
 // Middleware
+app.use(logger);
 app.use(express.json());
 app.use(helmet()); // Додає безпекові заголовки
 app.use(cors()); // Дозволяє запити з будь-яких джерел
-app.use(
-  pino({
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
-        messageFormat: '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-        hideObject: true,
-      },
-    },
-  }),
-);
 
-// Логування часу
-app.use((req, res, next) => {
-  console.log(`Time: ${new Date().toLocaleString()}`);
-  next();
-});
+// Notes routers
+app.use(notesRouters);
 
-// Перший маршрут
-app.get('/notes', (req, res) => {
-  res.status(200).json({ message: 'Retrieved all notes' });
-});
+// Middleware 404
+app.use(notFoundHandler);
 
-app.get('/notes/:noteId', (req, res) => {
-  const { noteId } = req.params;
-  res.status(200).json({ message: `Retrieved note with ID: ${noteId}` });
-});
+// Middleware Errors.
+app.use(errorHandler);
 
-// Маршрут для тестування middleware помилки
-app.get('/test-error', (req, res) => {
-  // Штучна помилка для прикладу
-  throw new Error('Simulated server error');
-});
+// Connect Mongo
+await connectMongoDB();
 
-// Middleware 404 (після всіх маршрутів)
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// Middleware для обробки помилок
-app.use((err, req, res, next) => {
-  console.error(err);
-
-  const isProd = process.env.NODE_ENV === "production";
-
-  res.status(500).json({
-    message: isProd
-      ? "Something went wrong. Please try again later."
-      : err.message,
-  });
-});
 
 // Запуск сервера
 app.listen(PORT, () => {
