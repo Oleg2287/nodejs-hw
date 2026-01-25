@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import helmet from 'helmet';
+import { errors } from 'celebrate';
 import { connectMongoDB } from './db/connectMongoDB.js';
 
 // Middlewares
@@ -27,12 +28,14 @@ app.use(notesRouters);
 // Middleware 404
 app.use(notFoundHandler);
 
+// Celebrate errors.
+app.use(errors());
+
 // Middleware Errors.
 app.use(errorHandler);
 
 // Connect Mongo
 await connectMongoDB();
-
 
 // Запуск сервера
 app.listen(PORT, () => {
