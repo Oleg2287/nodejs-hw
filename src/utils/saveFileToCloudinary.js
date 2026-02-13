@@ -14,8 +14,16 @@ export async function saveFileToCloudinary(buffer) {
       {
         folder: "students-app/avatars",
         resource_type: "image",
+        overwrite: true,
+        unique_filename: false,
+        use_filename: true,
       },
-      (err, result) => (err ? reject(err) : resolve(result))
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(result);
+      }
     );
 
     Readable.from(buffer).pipe(uploadStream);
