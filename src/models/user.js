@@ -18,10 +18,11 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
+      required: false,
       default: 'https://ac.goit.global/fullstack/react/default-avatar.jpg',
     },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true },
 );
 
 // Add email as default value for the username.
